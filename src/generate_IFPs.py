@@ -136,51 +136,52 @@ def get_smiles_bits(vecs, smiles):
     return smiles_bits
 
 
-parser = argparse.ArgumentParser(description='atomic or residue interactions?')
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='atomic or residue interactions?')
+
+    parser.add_argument('-IFP', '--ifp')
+    parser.add_argument('-sdf', '--SDF')
+    parser.add_argument('-exps', '--EXPS')
+    parser.add_arguments('-pdbs', '--PDBS')
+
+    args = vars(parser.parse_args())
+
+    IFP_type = args['ifp']
+    library_sdf = args['SDF']
+    experiments_json = args['EXPS']
+    data_path = args['PDBS']
+
+    assert IFP_type == 'residue' or IFP_type == 'atomic'
+
+    target_data = {}
+    library_smiles = get_library_smiles(library_sdf)
+    print('Total unique compounds in library:', len(set(library_smiles)))
+
+    xtal_smiles = json.load(open(experiments_json, 'r'))
 
 
-parser.add_argument('-IFP', '--ifp')
-parser.add_argument('-sdf', '--SDF')
-parser.add_argument('-exps', '--EXPS')
-parser.add_arguments('-pdbs', '--PDBS')
+    for target in os.listdir(data_path):
 
-args = vars(parser.parse_args())
+        try:
+            print(target)
 
-IFP_type = args['ifp']
-library_sdf = args['SDF']
-experiments_json = args['EXPS']
-data_path = args['PDBS']
+            ifrags, ivecs, ismiles = get_IFP_vectors(target, IFP_type)
+            vecs, frags, smiles, wrong = get_uniform_IFPs(ifrags, ivecs, ismiles)
 
-assert IFP_type == 'residue' or IFP_type == 'atomic'
+            print('IFPs:', len(vecs))
+            print('vectors of wrong length:', wrong)
 
-target_data = {}
-library_smiles = get_library_smiles(library_sdf)
-print('Total unique compounds in library:', len(set(library_smiles)))
+            smiles_bits = get_smiles_bits(vecs, smiles)
+            target_data[target] = smiles_bits
 
-xtal_smiles = json.load(open(experiments_json, 'r'))
-
-
-for target in os.listdir(data_path):
-
-    try:
-        print(target)
-
-        ifrags, ivecs, ismiles = get_IFP_vectors(target, IFP_type)
-        vecs, frags, smiles, wrong = get_uniform_IFPs(ifrags, ivecs, ismiles)
-
-        print('IFPs:', len(vecs))
-        print('vectors of wrong length:', wrong)
-
-        smiles_bits = get_smiles_bits(vecs, smiles)
-        target_data[target] = smiles_bits
-
-        if IFP_type == 'residue':
-            json.dump(target_data, open('data/datafiles/smiles_bits_residue.json', 'w'))
-        elif IFP_type == 'atomic':
-            json.dump(target_data, open('data/datafiles/smiles_bits_atomic.json', 'w'))
-    
-        print(f'{target} IFPs saved')
-    except:
-        print(target, 'error')
-        print(sys.exc_info()[1])
+            if IFP_type == 'residue':
+                json.dump(target_data, open('data/smiles_bits_residue.json', 'w'))
+            elif IFP_type == 'atomic':
+                json.dump(target_data, open('data/smiles_bits_atomic.json', 'w'))
+        
+            print(f'{target} IFPs saved')
+        except:
+            print(target, 'error')
+            print(sys.exc_info()[1])
 
