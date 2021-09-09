@@ -41,18 +41,18 @@ def get_IFP(IFP_type):
 
 def get_library_smiles(library_sdf):
 
-    # using the sdf files provided by Enamine, the molecules are cleaned of salts and converted into SMILES strings
+    # using the sdf file of the fragment library, the molecules are cleaned of salts and converted into SMILES strings
 
     remover = SaltRemover.SaltRemover()
 
-    raw_smiles = list(Chem.SDMolSupplier(library_sdf))
-    clean_smiles = [remover.StripMol(mol) for mol in raw_smiles]
+    raw_mols = list(Chem.SDMolSupplier(library_sdf))
+    clean_smiles = [remover.StripMol(mol) for mol in raw_mols]
     library_smiles = [Chem.MolToSmiles(i) for i in clean_smiles]
 
     return library_smiles
 
 
-def get_IFP_vectors(target, IFP_type):
+def get_IFP_vectors(data_path, target, IFP_type):
 
     # all IFPs for a particular target are calculated
 
@@ -60,22 +60,18 @@ def get_IFP_vectors(target, IFP_type):
     ifrags = []
     ivecs = []
 
-    for ligand in os.listdir(f'{DATA_DIR}/{target}'):
+    for ligand in os.listdir(f'{data_path}/{target}'):
 
 
         try:
-            if len(xtal_smiles[ligand]) > 1:
-                xtal_smiles[ligand] = [min(xtal_smiles[ligand])]
-            if Chem.MolToSmiles(Chem.MolFromSmiles(xtal_smiles[ligand][0])) in DSiP_smiles:
+            if Chem.MolToSmiles(Chem.MolFromSmiles(xtal_smiles[ligand])) in library_smiles:
 
-                separate_files(f'{DATA_DIR}/{target}/{ligand}')
-
-                print(ligand)
+                separate_files(f'{data_path}/{target}/{ligand}')
 
                 IFP = get_IFP(IFP_type)
             
                 if list(IFP).count(0) < len(IFP):
-                    ismiles.append(Chem.MolToSmiles(Chem.MolFromSmiles(xtal_smiles[ligand][0])))
+                    ismiles.append(Chem.MolToSmiles(Chem.MolFromSmiles(xtal_smiles[ligand])))
                     ifrags.append(ligand)
                     ivecs.append(IFP)
                     print(ligand, [i for i in range(len(IFP)) if IFP[i] > 0])
@@ -100,7 +96,6 @@ def get_uniform_IFPs(ismiles, ifrags, ivecs):
 
     lengths = [len(i) for i in ivecs]
     length = statistics.mode(lengths)
-    print(length)
 
     wrong = 0
     for i in range(len(ivecs)):
@@ -116,7 +111,7 @@ def get_uniform_IFPs(ismiles, ifrags, ivecs):
 
 def get_smiles_bits(vecs, smiles):
 
-    # take IFP vectors and assign 'on' bits to the smiles strings responsible
+    # take IFP vectors and assign 'on' bits to the smiles strings responsible for the interaction
 
     smiles_bits = {}
 
@@ -137,13 +132,14 @@ def get_smiles_bits(vecs, smiles):
 
 
 if __name__ == '__main__':
-
+    
     parser = argparse.ArgumentParser(description='atomic or residue interactions?')
+
 
     parser.add_argument('-IFP', '--ifp')
     parser.add_argument('-sdf', '--SDF')
     parser.add_argument('-exps', '--EXPS')
-    parser.add_arguments('-pdbs', '--PDBS')
+    parser.add_argument('-pdbs', '--PDBS')
 
     args = vars(parser.parse_args())
 
@@ -166,11 +162,11 @@ if __name__ == '__main__':
         try:
             print(target)
 
-            ifrags, ivecs, ismiles = get_IFP_vectors(target, IFP_type)
+            ifrags, ivecs, ismiles = get_IFP_vectors(data_path, target, IFP_type)
             vecs, frags, smiles, wrong = get_uniform_IFPs(ifrags, ivecs, ismiles)
 
-            print('IFPs:', len(vecs))
-            print('vectors of wrong length:', wrong)
+            print('Useable IFPs:', len(vecs))
+            print('Structures with missing atoms:', wrong)
 
             smiles_bits = get_smiles_bits(vecs, smiles)
             target_data[target] = smiles_bits
@@ -180,7 +176,7 @@ if __name__ == '__main__':
             elif IFP_type == 'atomic':
                 json.dump(target_data, open('data/smiles_bits_atomic.json', 'w'))
         
-            print(f'{target} IFPs saved')
+            print(f'{target} complete')
         except:
             print(target, 'error')
             print(sys.exc_info()[1])

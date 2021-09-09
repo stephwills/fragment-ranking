@@ -6,7 +6,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem import DataStructs, SaltRemover
 import os
-from generate_IFPs import get_library_smiles\
+from generate_IFPs import get_library_smiles
 import argparse
 
 def get_next_best_compound(smiles_bits, current_info, current_compounds, all_compounds):
@@ -47,7 +47,7 @@ def rank(smiles_bits, all_smiles, output):
     # ranks fragments provided by how much novel information they give across all targets
 
     fraction = [0]
-    comps = []
+    ranked_frags = []
 
     current_info = {}
     for t in smiles_bits:
@@ -77,6 +77,7 @@ if __name__ == '__main__':
     smiles_bits = args['BITS']
     output = args['output']
 
+    smiles_bits = json.load(open(smiles_bits, 'r'))
     library_smiles = get_library_smiles(library_sdf)
     ranked_fragments = rank(smiles_bits, library_smiles, output)
 
