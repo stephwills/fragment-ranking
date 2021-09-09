@@ -1,8 +1,8 @@
-## fragment-ranking
+# fragment-ranking
 
 A method for ranking fragments by how much novel information they give about protein targets in fragment screens. When using the results of fragment screens on many diverse targets, this method has been shown to select a set of functionally diverse fragments that can get information more efficiently from new targets. 
 
-# Instructions for use
+## Instructions for use
 
 Installation:
 
