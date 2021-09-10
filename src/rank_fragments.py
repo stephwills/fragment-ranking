@@ -1,7 +1,4 @@
 import json
-import matplotlib.pyplot as plt
-import numpy as np 
-import random
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem import DataStructs, SaltRemover

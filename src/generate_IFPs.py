@@ -60,14 +60,13 @@ def get_IFP_vectors(data_path, target, IFP_type):
     ifrags = []
     ivecs = []
 
-    for ligand in os.listdir(f'{data_path}/{target}'):
+    for ligand in os.listdir(os.path.join(data_path, target)):
 
 
         try:
             if Chem.MolToSmiles(Chem.MolFromSmiles(xtal_smiles[ligand])) in library_smiles:
 
-                separate_files(f'{data_path}/{target}/{ligand}')
-
+                separate_files(os.path.join(data_path, target, ligand))
                 IFP = get_IFP(IFP_type)
             
                 if list(IFP).count(0) < len(IFP):
@@ -172,9 +171,9 @@ if __name__ == '__main__':
             target_data[target] = smiles_bits
 
             if IFP_type == 'residue':
-                json.dump(target_data, open('data/smiles_bits_residue.json', 'w'))
+                json.dump(target_data, open(os.path.join('data', 'smiles_bits_residue.json'), 'w'))
             elif IFP_type == 'atomic':
-                json.dump(target_data, open('data/smiles_bits_atomic.json', 'w'))
+                json.dump(target_data, open(os.path.join('data', 'smiles_bits_atomic.json'), 'w'))
         
             print(f'{target} complete')
         except:
