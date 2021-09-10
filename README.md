@@ -6,7 +6,7 @@ A custom version of [ODDT](https://github.com/oddt/oddt) [1] is included, which 
 
 ## Instructions for use
 
-Conda or miniconda is required. Downloards and instructions can be found at: https://docs.conda.io/projects/conda/en/latest/. Once this requirement has been fulfilled, you can install fragment-ranking. 
+Conda or miniconda is required. Downloads and instructions can be found at: https://docs.conda.io/projects/conda/en/latest/. Once this requirement has been fulfilled, you can install fragment-ranking. 
 
 Installation:
 
