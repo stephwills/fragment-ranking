@@ -1,5 +1,5 @@
 import os
-from oddt.fingerprints_new import InteractionFingerprint, InteractionFingerprintAtomic, tanimoto
+from oddt.fingerprints_new import InteractionFingerprint, InteractionFingerprintAtomic
 import oddt
 import sys 
 from pymol import cmd
