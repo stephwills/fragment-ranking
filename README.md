@@ -17,7 +17,7 @@ cd fragment-ranking
 ```
 2. create new conda environment and install pymol and rdkit
 ```bash
-conda create -n fragment-ranking
+conda create -n fragment-ranking -y
 conda activate fragment-ranking
 conda install -c schrodinger pymol -y
 conda install -c conda-forge rdkit -y 
