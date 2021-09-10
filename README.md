@@ -2,7 +2,7 @@
 
 A method for ranking fragments by how much novel information they give about protein targets in fragment screens. When using the results of fragment screens on many diverse targets, this method has been shown to select a set of functionally diverse fragments that can get information more efficiently from new targets. 
 
-A custom version of [ODDT](https://github.com/oddt/oddt) is used, which contains a module that generates an atomic-level interaction fingerprint.
+A custom version of [ODDT](https://github.com/oddt/oddt)[1] is included, which contains a module that generates an atomic-level interaction fingerprint.
 
 ## Instructions for use
 
