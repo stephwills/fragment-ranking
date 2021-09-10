@@ -20,18 +20,18 @@ Test data is provided.
 Run:
 1. Generate interaction fingerprints from structures. Either residue-level or atomic-level interaction fingerprints can be used. 
 ```bash
-$ python src/generate_IFPs.py -IFP [atomic/residue] -sdf [path_to_fragment_library.sdf] -exps [path_to_experiments.json] -pdbs [path_to_pdb_files]
+python src/generate_IFPs.py -IFP [atomic/residue] -sdf [path_to_fragment_library.sdf] -exps [path_to_experiments.json] -pdbs [path_to_pdb_files]
 ```
   for example:
 ```bash
-$ python src/generate_IFPs.py -IFP atomic -sdf data/library.sdf -exps data/experiments_mArh.json -pdbs data/structures/
+python src/generate_IFPs.py -IFP atomic -sdf data/library.sdf -exps data/experiments_mArh.json -pdbs data/structures/
 ```
 2. Rank fragments
 ```bash
-$ python src/rank_fragments.py -sdf [path_to_fragment_library.sdf] -bits data/smiles_bits_[atomic/residue].json -o [output_file]
+python src/rank_fragments.py -sdf [path_to_fragment_library.sdf] -bits data/smiles_bits_[atomic/residue].json -o [output_file]
 ```
 for example:
 ```bash
-$ python src/rank_fragments.py -sdf data/library.sdf -bits data/smiles_bits_atomic.json -o ranked_fragments.json
+python src/rank_fragments.py -sdf data/library.sdf -bits data/smiles_bits_atomic.json -o ranked_fragments.json
 ```
 
