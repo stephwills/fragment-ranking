@@ -24,6 +24,7 @@ from oddt.interactions import (pi_stacking,
 
 __all__ = ['InteractionFingerprint',
             'InteractionFingerprintAtomic',
+           'InteractionFingerprintModified',
            'SimpleInteractionFingerprint',
            'SPLIF',
            'similarity_SPLIF',
@@ -64,12 +65,12 @@ def InteractionFingerprint(ligand, protein, strict=True):
         Vector of calculated IFP (size = no residues * 8 type of interaction)
 
     """
-    resids = np.unique(protein.atom_dict['resid'])
-    IFP = np.zeros((len(resids), 8), dtype=np.uint8)
+    resids = np.unique(protein.atom_dict['resid'])  # get unique res idxs
+    IFP = np.zeros((len(resids), 8), dtype=np.uint8)  # make empty IFP, len res * 8 (number of interactions)
 
     # hydrophobic contacts (column = 0)
-    hydrophobic = hydrophobic_contacts(protein, ligand)[0]['resid']
-    np.add.at(IFP, (np.searchsorted(resids, np.sort(hydrophobic)[::-1]), 0), 1)
+    hydrophobic = hydrophobic_contacts(protein, ligand)[0]['resid']  # returns the protein atoms resids (can be repeated)
+    np.add.at(IFP, (np.searchsorted(resids, np.sort(hydrophobic)[::-1]), 0), 1)  # adds the counts of the hydrophobic interactions to the array
 
     # aromatic face to face (Column = 1), aromatic edge to face (Column = 2)
     rings, _, strict_parallel, strict_perpendicular = pi_stacking(
@@ -109,6 +110,87 @@ def InteractionFingerprint(ligand, protein, strict=True):
         resids, np.sort(metal[strict2]['resid'])[::-1]), 7), 1)
 
     return IFP.flatten()
+
+
+def InteractionFingerprintModified(ligand, protein, strict=True):
+    """Interaction fingerprint accomplished by converting the molecular
+    interaction of ligand-protein into bit array according to
+    the residue of choice and the interaction. For every residue
+    (One row = one residue) there are eight bits which represent
+    eight type of interactions:
+
+    - (Column 0) hydrophobic contacts
+    - (Column 1) aromatic face to face
+    - (Column 2) aromatic edge to face
+    - (Column 3) hydrogen bond (protein as hydrogen bond donor)
+    - (Column 4) hydrogen bond (protein as hydrogen bond acceptor)
+    - (Column 5) salt bridges (protein positively charged)
+    - (Column 6) salt bridges (protein negatively charged)
+    - (Column 7) salt bridges (ionic bond with metal ion)
+
+    Parameters
+    ----------
+    ligand, protein : oddt.toolkit.Molecule object
+        Molecules, which are analysed in order to find interactions.
+
+    strict : bool (deafult = True)
+        If False, do not include condition, which informs whether atoms
+        form 'strict' H-bond (pass all angular cutoffs).
+
+    Returns
+    -------
+    InteractionFingerprint : numpy array
+        Vector of calculated IFP (size = no residues * 8 type of interaction)
+
+    """
+    IFP = []
+
+    # hydrophobic contacts (column = 0)
+    hydrophobic = hydrophobic_contacts(protein, ligand)[0]
+    IFP.extend([f"{name}-{num}-0" for name, num in zip(hydrophobic['resname'], hydrophobic['resnum'])])
+
+    # aromatic face to face (Column = 1), aromatic edge to face (Column = 2)
+    rings, _, strict_parallel, strict_perpendicular = pi_stacking(
+        protein, ligand)
+
+    IFP.extend([f"{name}-{num}-1" for name, num in
+                zip(rings[strict_perpendicular]['resname'][::-1], rings[strict_perpendicular]['resnum'][::-1])])
+
+    IFP.extend([f"{name}-{num}-2" for name, num in
+                zip(rings[strict_parallel]['resname'][::-1], rings[strict_parallel]['resnum'][::-1])])
+
+    # h-bonds, protein as a donor (Column = 3)
+    _, donors, strict0 = hbond_acceptor_donor(ligand, protein)
+    if strict is False:
+        strict0 = None
+
+    IFP.extend([f"{name}-{num}-3" for name, num in
+                zip(donors[strict0]['resname'][::-1].flatten(), donors[strict0]['resnum'][::-1].flatten())])
+
+    # h-bonds, protein as an acceptor (Column = 4)
+    acceptors, _, strict1 = hbond_acceptor_donor(protein, ligand)
+    if strict is False:
+        strict1 = None
+
+    IFP.extend([f"{name}-{num}-4" for name, num in
+                zip(acceptors[strict1]['resname'][::-1].flatten(), acceptors[strict1]['resnum'][::-1].flatten())])
+
+    # salt bridges, protein positively charged (Column = 5)
+    plus, _ = salt_bridge_plus_minus(protein, ligand)
+    IFP.extend([f"{name}-{num}-5" for name, num in zip(plus['resname'][::-1].flatten(), plus['resnum'][::-1].flatten())])
+
+    # salt bridges, protein negatively charged (Column = 6)
+    _, minus = salt_bridge_plus_minus(protein, ligand)
+    IFP.extend([f"{name}-{num}-6" for name, num in zip(minus['resname'][::-1].flatten(), minus['resnum'][::-1].flatten())])
+
+    # salt bridges, ionic bond with metal ion (Column = 7)
+    _, metal, strict2 = acceptor_metal(protein, ligand)
+    if strict is False:
+        strict2 = None
+    IFP.extend([f"{name}-{num}-7" for name, num in
+                zip(np.sort(metal[strict2]['resname'])[::-1].flatten(), np.sort(metal[strict2]['resnum'])[::-1].flatten())])
+
+    return IFP
 
 
 def InteractionFingerprintAtomic(ligand, protein, strict=True):
